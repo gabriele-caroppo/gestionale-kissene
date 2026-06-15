@@ -736,6 +736,7 @@
       document.getElementById('loading').style.display = 'none';
       document.getElementById('app').style.display = 'block';
       buildUI();
+      return Promise.resolve();
     } catch(e) {
       console.error(e);
       document.getElementById('loading').style.display = 'none';
@@ -1096,6 +1097,54 @@
     toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
   }
 
+
+  // ── Seed Kissene ────────────────────────────────────────────
+  const KISSENE_SEED = {
+    'kissene_calogero': [
+      { name: 'Finire mockup maglia', status: 'todo' },
+      { name: 'Misurazione dimensioni (maglia)', status: 'todo' },
+      { name: 'Mockup borsa di tela', status: 'todo' },
+      { name: 'Misurazione dimensioni (borsa)', status: 'todo' },
+      { name: 'Post Insta', status: 'todo' },
+    ],
+    'kissene_gabriele2': [
+      { name: 'Finire sito web', status: 'todo' },
+      { name: 'Mockup canotta', status: 'todo' },
+      { name: 'Post Insta', status: 'todo' },
+    ],
+    'kissene_bruna': [
+      { name: 'Sistemare mockup canotta', status: 'todo' },
+      { name: 'Misurazione stella', status: 'todo' },
+      { name: 'Comunicare materiali stella', status: 'todo' },
+      { name: 'Manodopera', status: 'todo' },
+    ],
+    'kissene_giulio': [
+      { name: 'Studiare comunicazione', status: 'todo' },
+      { name: 'Preparare un file con tutte le reference e lo scheletro dei tre post', status: 'todo' },
+      { name: 'Trovare un fornitore canotte uomo', status: 'incomplete' },
+      { name: 'Trovare un fornitore canotte donna', status: 'incomplete' },
+      { name: 'Trovare un fornitore maglia uomo', status: 'incomplete' },
+      { name: 'Impostare shooting post e sito', status: 'todo' },
+      { name: 'Studiare nuovo packaging', status: 'todo' },
+      { name: 'Commercialista con Cipro', status: 'incomplete' },
+    ],
+    'kissene_flavio': [
+      { name: 'Preparare file con tutte le forniture', status: 'todo' },
+      { name: 'Packaging', status: 'todo' },
+    ],
+  };
+
+  async function seedKissene(db) {
+    const { ref, get, push } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    for (const [cid, tasks] of Object.entries(KISSENE_SEED)) {
+      const snap = await get(ref(db, `tasks/${cid}`));
+      if (snap.exists()) continue;
+      for (const task of tasks) {
+        await push(ref(db, `tasks/${cid}`), { ...task, createdAt: Date.now() });
+      }
+    }
+  }
+
   // ── Boot ────────────────────────────────────────────────────
   const cfg = {
     apiKey: "AIzaSyAfy8G_pHz8DftywbYi4YX1k71EyrmOgxQ",
@@ -1103,7 +1152,9 @@
     databaseURL: "https://gestionale-gabriele-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "gestionale-gabriele",
   };
-  initFirebase(cfg);
+  initFirebase(cfg).then(() => {
+    setTimeout(async () => { if (db) await seedKissene(db); }, 1500);
+  });
 </script>
 </body>
 </html>
